@@ -3,9 +3,6 @@
 __pycache__/
 *.pyc
 
-# === Data outputs ===
-vectorstore/
-
 # === Scraped data files (optional: remove if you want to track them) ===
 data/tds_content.json
 data/discourse_forum_posts.json
