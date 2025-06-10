@@ -19,10 +19,10 @@ def main():
         print(f"❌ TDS site scraping failed: {e}")
 
     print("\n🔍 Scraping Discourse forum content...")
-    # try:
-    #     scrape_forum()
-    # except Exception as e:
-    #     print(f"❌ Discourse forum scraping failed: {e}")
+    try:
+        scrape_forum()
+    except Exception as e:
+        print(f"❌ Discourse forum scraping failed: {e}")
 
     print("\n✅ All scraping complete. JSON files saved in 'data/' folder.")
 
