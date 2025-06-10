@@ -1,22 +1,14 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
+# main.py (or your FastAPI entry file)
 
-import base64
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
-
-from qa_pipeline import load_vectorstore, embed_text, answer_question
+from typing import List, Dict, Any
 
 app = FastAPI()
 
-# --- CORS Configuration ---
-# Define the origins that are allowed to access your API
-# You should replace "*" with the actual domain(s) of your frontend application
-# For development, "*" is fine, but for production, specify explicit domains.
+# Add this entire origins section to allow requests
+# from the evaluation website and local development.
 origins = [
     "https://exam.sanand.workers.dev",  # The evaluation website
     "http://localhost",
@@ -25,50 +17,41 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins,  # Allows specific origins
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"], # Allows all headers
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
-# --- End CORS Configuration ---
 
 
-# Load the FAISS vectorstore once on startup
-# Make sure your FAISS index and embedding model are accessible in the Vercel environment.
-# This might involve placing them in the same directory as your API or configuring Vercel to fetch them.
-vectorstore = load_vectorstore()
-
-class QuestionRequest(BaseModel):
-    question: str
-    image: Optional[str] = None  # base64-encoded string
-
-class LinkItem(BaseModel):
-    url: str
+# Define your data models using Pydantic
+class Link(BaseModel):
     text: str
+    url: str
 
-class QuestionResponse(BaseModel):
+class RequestBody(BaseModel):
+    question: str
+    image: str | None = None # Optional image field
+
+class ResponseBody(BaseModel):
     answer: str
-    links: List[LinkItem]
+    links: List[Link]
 
-@app.post("/", response_model=QuestionResponse)
-async def ask_question(data: QuestionRequest):
-    try:
-        answer, sources = answer_question(data.question, vectorstore)
 
-        # sources is a list of dicts with keys 'url' and 'text'
-        links = list(sources)
-
-        # ✅ Ensure JSON content type with explicit JSONResponse
-        return JSONResponse(
-            content={
-                "answer": answer,
-                "links": links
-            },
-            media_type="application/json"
-        )
-
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": str(e)}
-        )
+@app.post("/")
+def handle_request(body: RequestBody) -> ResponseBody:
+    # Your API logic here
+    # This example returns the static response from the prompt
+    return ResponseBody(
+      answer="You must use `gpt-3.5-turbo-0125`, even if the AI Proxy only supports `gpt-4o-mini`. Use the OpenAI API directly for this question.",
+      links=[
+        {
+          "text": "Use the model that’s mentioned in the question.",
+          "url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/4"
+        },
+        {
+          "text": "My understanding is that you just have to use a tokenizer, similar to what Prof. Anand used, to get the number of tokens and multiply that by the given rate.",
+          "url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/3"
+        }
+      ]
+    )

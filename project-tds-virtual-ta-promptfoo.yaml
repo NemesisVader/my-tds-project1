@@ -6,7 +6,7 @@ description: "TDS Virtual TA Project Sample (but not the actual evaluation) Ques
 providers:
   - id: https
     config:
-      url: https://tds-virtual-ta-api-gvxw.onrender.com # Replace this with your API endpoint
+      url: npx -y promptfoo eval --config https://tds-virtual-ta-api-6xiy.onrender.com
       method: POST
       headers:
         Content-Type: application/json
