@@ -87,3 +87,9 @@ def answer_question(question, vectorstore, k=5):
 
     return answer, links
 
+# === Public API function for FastAPI ===
+def get_relevant_answer(question: str, image_b64: str = None) -> tuple[str, list[dict]]:
+    vectorstore = load_vectorstore()
+    answer, links = answer_question(question, vectorstore)
+    return answer, links
+

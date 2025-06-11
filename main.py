@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any
+from qa_pipeline import get_relevant_answer
 
 app = FastAPI()
 
@@ -17,7 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 # Define your data models using Pydantic
 class Link(BaseModel):
@@ -35,18 +35,10 @@ class ResponseBody(BaseModel):
 
 @app.post("/")
 def handle_request(body: RequestBody) -> ResponseBody:
-    # Your API logic here
-    # This example returns the static response from the prompt
+    # Use your QA pipeline to get an answer
+    answer_text, links = get_relevant_answer(body.question, body.image)
+
     return ResponseBody(
-      answer="You must use `gpt-3.5-turbo-0125`, even if the AI Proxy only supports `gpt-4o-mini`. Use the OpenAI API directly for this question.",
-      links=[
-        {
-          "text": "Use the model that’s mentioned in the question.",
-          "url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/4"
-        },
-        {
-          "text": "My understanding is that you just have to use a tokenizer, similar to what Prof. Anand used, to get the number of tokens and multiply that by the given rate.",
-          "url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939/3"
-        }
-      ]
+        answer=answer_text,
+        links=[Link(text=link["text"], url=link["url"]) for link in links]
     )
