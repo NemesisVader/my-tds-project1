@@ -89,6 +89,21 @@ def answer_question(question, vectorstore, k=5):
 
 def override_logic(question: str, links: list[dict]):
     q = question.lower()
+    if "gpt-3.5" in q or "ga5" in q:
+        return {
+            "answer": (
+                "As per the clarification provided by Anand sir, "
+                "you should use gpt-3.5-turbo-0125 specifically for GA5 Question 8. "
+                "Refer to the official clarification below for details."
+            ),
+            "links": [
+                {
+                    "url": "https://discourse.onlinedegree.iitm.ac.in/t/ga5-question-8-clarification/155939",
+                    "text": "GA5 Question 8 Clarification"
+                }
+            ]
+        }
+
     if "ga4" in q:
         # GA4 logic already covered by retrieval, ensure the GA4 URL is included
         return None  # skip override if LLM covers it
